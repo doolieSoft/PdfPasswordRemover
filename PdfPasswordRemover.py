@@ -27,8 +27,9 @@ def main():
 
     timestamp = time.localtime()
     date_exec = str(
-        timestamp.tm_year) + str(timestamp.tm_mon) + str(timestamp.tm_mday) + str(timestamp.tm_hour) + str(
-        timestamp.tm_min) + str(timestamp.tm_sec)
+        timestamp.tm_year) + str(timestamp.tm_mon).zfill(2) + str(timestamp.tm_mday).zfill(2) + str(
+        timestamp.tm_hour).zfill(2) + str(
+        timestamp.tm_min).zfill(2) + str(timestamp.tm_sec).zfill(2)
     destination_backup_folder_name = destination_directory + date_exec + '_backup\\'
     destination_new_folder_name = destination_directory + date_exec + '_new\\'
 
