@@ -1,0 +1,17 @@
+# Created by .ignore support plugin (hsz.mobi)
+.idea/
+Include/
+Lib/
+PdfPasswordRemover.spec
+Scripts/
+__pycache__/
+build/
+dist/
+main.spec
+pip-selfcheck.json
+pyvenv.cfg
+/MailPHCI_PdfPasswordRemover.bat
+/MailPRCI_PdfPasswordRemover.bat
+/MailZHCI_PdfPasswordRemover.bat
+/MailZHUL_PdfPasswordRemover.bat
+/MailPHUL_PdfPasswordRemover.bat
