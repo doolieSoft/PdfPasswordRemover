@@ -45,44 +45,52 @@ def main():
         if file_age_in_seconds(source_file_path) < float(age_of_file_to_treat):
             continue
 
+        old_file_name = file_name
+        file_name = file_name.lower().replace('.pdf.convert', '.pdf')
+        destination_file_path = destination_new_folder_name + file_name
+
         if file_name.lower().endswith(('.pdf', '.pdf.convert')):
-            if not os.path.isdir(destination_backup_folder_name):
-                os.mkdir(destination_backup_folder_name)
-            if not os.path.isdir(destination_new_folder_name):
-                os.mkdir(destination_new_folder_name)
+            f = None
+            pdf_output_file = None
 
-            f = open(source_file_path, 'rb')
             try:
+                f = open(source_file_path, 'rb')
+
                 file_reader = PyPDF2.PdfFileReader(f)
-            except:
-                continue
 
-            print(source_file_path + " > Nb pages: " + str(file_reader.numPages) + "; Is Encrypted: " + str(
-                file_reader.isEncrypted))
+                print(source_file_path + " > Nb pages: " + str(file_reader.numPages) + "; Is Encrypted: " + str(
+                    file_reader.isEncrypted))
 
-            pdf_writer = PyPDF2.PdfFileWriter()
+                pdf_writer = PyPDF2.PdfFileWriter()
 
-            for pageNum in range(file_reader.numPages):
-                page_obj = file_reader.getPage(pageNum)
-                pdf_writer.addPage(page_obj)
+                for pageNum in range(file_reader.numPages):
+                    page_obj = file_reader.getPage(pageNum)
+                    pdf_writer.addPage(page_obj)
 
-            old_file_name = file_name
-            file_name = file_name.lower().replace('.pdf.convert', '.pdf')
-            destination_file_path = destination_new_folder_name + file_name
-            try:
+                if not os.path.isdir(destination_backup_folder_name):
+                    os.mkdir(destination_backup_folder_name)
+                if not os.path.isdir(destination_new_folder_name):
+                    os.mkdir(destination_new_folder_name)
+
                 pdf_output_file = open(destination_file_path, 'wb')
                 pdf_writer.write(pdf_output_file)
                 pdf_output_file.close()
                 i = i + 1
+                f.close()
             except:
+                if f is not None:
+                    f.close()
+
+                if pdf_output_file is not None:
+                    pdf_output_file.close()
+
                 print("Exception occurred with creation of file " + destination_file_path)
-            f.close()
         try:
             shutil.move(source_file_path, destination_backup_folder_name + old_file_name)
         except:
-            print(
-                "Exception occurred while moving from [ " + source_file_path + " ] to [ " +
-                destination_backup_folder_name + old_file_name + " ]")
+            print("Exception occurred while moving from [ " + source_file_path + " ] to [ " +
+                  destination_backup_folder_name + old_file_name + " ]")
+
     print(str(i) + " file(s) have been treated.")
     input("Press enter to continue...")
 
