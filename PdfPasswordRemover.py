@@ -7,7 +7,8 @@ import stat
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Tool made to remove password set on pdf files")
+    parser = argparse.ArgumentParser(
+        description="Tool made to remove password set on pdf files - (Stefano Crapanzano - s.crapanzano@gmail.com)")
     parser.add_argument('--source_directory', help='Directory containing the PDFs with password protection',
                         required=True)
     parser.add_argument('--destination_directory', help='Directory where the new PDFs will be placed',
@@ -30,6 +31,7 @@ def main():
         timestamp.tm_year) + str(timestamp.tm_mon).zfill(2) + str(timestamp.tm_mday).zfill(2) + str(
         timestamp.tm_hour).zfill(2) + str(
         timestamp.tm_min).zfill(2) + str(timestamp.tm_sec).zfill(2)
+
     destination_backup_folder_name = destination_directory + date_exec + '_backup\\'
     destination_new_folder_name = destination_directory + date_exec + '_new\\'
 
@@ -94,7 +96,7 @@ def main():
                 if pdf_output_file is not None:
                     pdf_output_file.close()
 
-                print("Exception occurred with creation of file " + destination_file_path)
+                print("--- Exception occurred with creation of file " + destination_file_path + " ---")
         try:
             shutil.move(source_file_path, destination_backup_folder_name + old_file_name)
             nb_files_moved = nb_files_moved + 1
