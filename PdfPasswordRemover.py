@@ -33,7 +33,8 @@ def main():
     destination_backup_folder_name = destination_directory + date_exec + '_backup\\'
     destination_new_folder_name = destination_directory + date_exec + '_new\\'
 
-    i = 0
+    nb_pdf_corrected = 0
+    nb_files_moved = 0
 
     for file_name in os.listdir(source_directory):
 
@@ -44,6 +45,20 @@ def main():
 
         if file_age_in_seconds(source_file_path) < float(age_of_file_to_treat):
             continue
+
+        try:
+            if not os.path.isdir(destination_backup_folder_name):
+                os.mkdir(destination_backup_folder_name)
+        except:
+            print("Exception occurred while creating " + destination_backup_folder_name)
+            break
+
+        try:
+            if not os.path.isdir(destination_new_folder_name):
+                os.mkdir(destination_new_folder_name)
+        except:
+            print("Exception occurred while creating " + destination_new_folder_name)
+            break
 
         old_file_name = file_name
         file_name = file_name.lower().replace('.pdf.convert', '.pdf')
@@ -67,15 +82,10 @@ def main():
                     page_obj = file_reader.getPage(pageNum)
                     pdf_writer.addPage(page_obj)
 
-                if not os.path.isdir(destination_backup_folder_name):
-                    os.mkdir(destination_backup_folder_name)
-                if not os.path.isdir(destination_new_folder_name):
-                    os.mkdir(destination_new_folder_name)
-
                 pdf_output_file = open(destination_file_path, 'wb')
                 pdf_writer.write(pdf_output_file)
                 pdf_output_file.close()
-                i = i + 1
+                nb_pdf_corrected = nb_pdf_corrected + 1
                 f.close()
             except:
                 if f is not None:
@@ -87,11 +97,13 @@ def main():
                 print("Exception occurred with creation of file " + destination_file_path)
         try:
             shutil.move(source_file_path, destination_backup_folder_name + old_file_name)
+            nb_files_moved = nb_files_moved + 1
         except:
             print("Exception occurred while moving from [ " + source_file_path + " ] to [ " +
                   destination_backup_folder_name + old_file_name + " ]")
 
-    print(str(i) + " file(s) have been treated.")
+    print(str(nb_files_moved) + " file(s) have been moved in " + destination_backup_folder_name)
+    print(str(nb_pdf_corrected) + " pdf file(s) have been treated.")
     input("Press enter to continue...")
 
 
