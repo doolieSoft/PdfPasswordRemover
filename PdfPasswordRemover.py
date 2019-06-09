@@ -1,20 +1,18 @@
-import PyPDF2
-import os
 import argparse
+import os
 import shutil
-import time
 import stat
+import time
+
+import PyPDF2
 
 
 def main():
     parser = argparse.ArgumentParser(
         description="Tool made to remove password set on pdf files - (Stefano Crapanzano - s.crapanzano@gmail.com)")
-    parser.add_argument('--source_directory', help='Directory containing the PDFs with password protection',
-                        required=True)
-    parser.add_argument('--destination_directory', help='Directory where the new PDFs will be placed',
-                        required=True)
-    parser.add_argument('--age_of_file_to_treat', help='Age in seconds of file to be treated',
-                        required=True)
+    parser.add_argument('source_directory', help='Directory containing the PDFs with password protection')
+    parser.add_argument('destination_directory', help='Directory where the new PDFs will be placed')
+    parser.add_argument('-a', '--age_of_file_to_treat', help='Age in seconds of file to be treated')
     args = parser.parse_args()
 
     source_directory = vars(args)['source_directory']
@@ -45,7 +43,7 @@ def main():
         if not os.path.isfile(source_file_path):
             continue
 
-        if file_age_in_seconds(source_file_path) < float(age_of_file_to_treat):
+        if age_of_file_to_treat and file_age_in_seconds(source_file_path) < float(age_of_file_to_treat):
             continue
 
         try:
