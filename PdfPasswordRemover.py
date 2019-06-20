@@ -1,9 +1,10 @@
-import PyPDF2
-import os
 import argparse
+import os
 import shutil
-import time
 import stat
+import time
+
+import PyPDF2
 
 
 def main():
