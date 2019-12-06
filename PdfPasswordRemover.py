@@ -18,26 +18,21 @@ def main():
     destination_directory = vars(args)['destination_directory']
     age_of_file_to_treat = vars(args)['age_of_file_to_treat']
 
-    if not source_directory.endswith('\\'):
-        source_directory += '\\'
-    if not destination_directory.endswith('\\'):
-        destination_directory += '\\'
-
     timestamp = time.localtime()
     date_exec = str(
         timestamp.tm_year) + str(timestamp.tm_mon).zfill(2) + str(timestamp.tm_mday).zfill(2) + str(
         timestamp.tm_hour).zfill(2) + str(
         timestamp.tm_min).zfill(2) + str(timestamp.tm_sec).zfill(2)
 
-    destination_backup_folder_name = destination_directory + date_exec + '_backup\\'
-    destination_new_folder_name = destination_directory + date_exec + '_new\\'
+    destination_backup_folder_name = os.path.join(destination_directory, date_exec + '_backup')
+    destination_new_folder_name = os.path.join(destination_directory, date_exec + '_new')
 
     nb_pdf_corrected = 0
     nb_files_moved = 0
 
     for file_name in os.listdir(source_directory):
 
-        source_file_path = source_directory + file_name
+        source_file_path = os.path.join(source_directory, file_name)
 
         if not os.path.isfile(source_file_path):
             continue
@@ -62,7 +57,7 @@ def main():
         old_file_name = file_name
         file_name = file_name.lower().replace('.pdf.convert', '.pdf')
         file_name = file_name.lower().replace('.pdf.import', '.pdf')
-        destination_file_path = destination_new_folder_name + file_name
+        destination_file_path = os.path.join(destination_new_folder_name, file_name)
 
         if file_name.lower().endswith(('.pdf', '.pdf.convert', 'pdf.import')):
             f = None
