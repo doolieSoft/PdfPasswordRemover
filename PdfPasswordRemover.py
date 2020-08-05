@@ -91,7 +91,7 @@ def main():
 
                 print("--- Exception occurred with creation of file " + destination_file_path + " ---")
         try:
-            shutil.move(source_file_path, destination_backup_folder_name + old_file_name)
+            shutil.move(source_file_path, os.path.join(destination_backup_folder_name, old_file_name))
             nb_files_moved = nb_files_moved + 1
         except:
             print("Exception occurred while moving from [ " + source_file_path + " ] to [ " +
