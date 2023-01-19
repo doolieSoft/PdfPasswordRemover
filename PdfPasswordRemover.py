@@ -66,16 +66,16 @@ def main():
             try:
                 f = open(source_file_path, 'rb')
 
-                file_reader = PyPDF2.PdfFileReader(f)
+                file_reader = PyPDF2.PdfReader(f)
 
-                print(source_file_path + " > Nb pages: " + str(file_reader.numPages) + "; Is Encrypted: " + str(
-                    file_reader.isEncrypted))
+                print(source_file_path + " > Nb pages: " + str(len(file_reader.pages)) + "; Is Encrypted: " + str(
+                    file_reader.is_encrypted))
 
-                pdf_writer = PyPDF2.PdfFileWriter()
+                pdf_writer = PyPDF2.PdfWriter()
 
-                for pageNum in range(file_reader.numPages):
-                    page_obj = file_reader.getPage(pageNum)
-                    pdf_writer.addPage(page_obj)
+                for pageNum in range(len(file_reader.pages)):
+                    page_obj = file_reader.pages[pageNum]
+                    pdf_writer.add_page(page_obj)
 
                 pdf_output_file = open(destination_file_path, 'wb')
                 pdf_writer.write(pdf_output_file)
@@ -100,7 +100,6 @@ def main():
     print(str(nb_files_moved) + " file(s) have been moved in " + destination_backup_folder_name)
     print(str(nb_pdf_corrected) + " pdf file(s) have been treated.")
     input("Press enter to continue...")
-
 
 def file_age_in_seconds(pathname):
     return time.time() - os.stat(pathname)[stat.ST_MTIME]
