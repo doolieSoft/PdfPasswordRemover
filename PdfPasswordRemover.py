@@ -1,108 +1,102 @@
 import argparse
-import os
 import shutil
-import stat
 import time
+from pathlib import Path
 
-import PyPDF2
+from pypdf import PdfReader, PdfWriter
+
+# Extensions handled, with the suffix to strip to get back a plain ".pdf" name
+PDF_SUFFIXES = ('.pdf', '.pdf.convert', '.pdf.import')
+EXTRA_SUFFIXES = ('.convert', '.import')
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Tool made to remove password set on pdf files - (Stefano Crapanzano - s.crapanzano@gmail.com)")
+    parser.add_argument('source_directory', type=Path, help='Directory containing the PDFs with password protection')
+    parser.add_argument('destination_directory', type=Path, help='Directory where the new PDFs will be placed')
+    parser.add_argument('-a', '--age_of_file_to_treat', type=float,
+                        help='Minimum age in seconds of the files to treat (younger files are ignored)')
+    parser.add_argument('-p', '--pause', action='store_true',
+                        help='Wait for the user to press enter before exiting')
+    return parser.parse_args()
+
+
+def is_pdf(path):
+    return path.name.lower().endswith(PDF_SUFFIXES)
+
+
+def output_name(file_name):
+    """Strip the extra '.convert' / '.import' suffix, keeping the original case."""
+    for suffix in EXTRA_SUFFIXES:
+        if file_name.lower().endswith('.pdf' + suffix):
+            return file_name[:-len(suffix)]
+    return file_name
+
+
+def file_age_in_seconds(path):
+    return time.time() - path.stat().st_mtime
+
+
+def remove_password(source_path, destination_path):
+    reader = PdfReader(source_path)
+    print(f"{source_path} > Nb pages: {len(reader.pages)}; Is Encrypted: {reader.is_encrypted}")
+
+    writer = PdfWriter()
+    for page in reader.pages:
+        writer.add_page(page)
+
+    with open(destination_path, 'wb') as output_file:
+        writer.write(output_file)
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Tool made to remove password set on pdf files - (Stefano Crapanzano - s.crapanzano@gmail.com)")
-    parser.add_argument('source_directory', help='Directory containing the PDFs with password protection')
-    parser.add_argument('destination_directory', help='Directory where the new PDFs will be placed')
-    parser.add_argument('-a', '--age_of_file_to_treat', help='Age in seconds of file to be treated')
-    args = parser.parse_args()
-    source_directory = vars(args)['source_directory']
-    destination_directory = vars(args)['destination_directory']
-    age_of_file_to_treat = vars(args)['age_of_file_to_treat']
+    args = parse_args()
 
-    timestamp = time.localtime()
-    date_exec = str(
-        timestamp.tm_year) + str(timestamp.tm_mon).zfill(2) + str(timestamp.tm_mday).zfill(2) + str(
-        timestamp.tm_hour).zfill(2) + str(
-        timestamp.tm_min).zfill(2) + str(timestamp.tm_sec).zfill(2)
-
-    destination_backup_folder_name = os.path.join(destination_directory, date_exec + '_backup')
-    destination_new_folder_name = os.path.join(destination_directory, date_exec + '_new')
+    date_exec = time.strftime('%Y%m%d%H%M%S')
+    backup_directory = args.destination_directory / f'{date_exec}_backup'
+    new_directory = args.destination_directory / f'{date_exec}_new'
 
     nb_pdf_corrected = 0
-    nb_files_moved = 0
+    nb_pdf_failed = 0
 
-    for file_name in os.listdir(source_directory):
-
-        source_file_path = os.path.join(source_directory, file_name)
-
-        if not os.path.isfile(source_file_path):
+    for source_path in sorted(args.source_directory.iterdir()):
+        if not source_path.is_file() or not is_pdf(source_path):
             continue
 
-        if age_of_file_to_treat and file_age_in_seconds(source_file_path) < float(age_of_file_to_treat):
+        if args.age_of_file_to_treat is not None and file_age_in_seconds(source_path) < args.age_of_file_to_treat:
             continue
 
         try:
-            if not os.path.isdir(destination_backup_folder_name):
-                os.mkdir(destination_backup_folder_name)
-        except:
-            print("Exception occurred while creating " + destination_backup_folder_name)
+            backup_directory.mkdir(parents=True, exist_ok=True)
+            new_directory.mkdir(parents=True, exist_ok=True)
+        except OSError as e:
+            print(f"Exception occurred while creating the destination directories: {e}")
             break
 
+        destination_path = new_directory / output_name(source_path.name)
+
         try:
-            if not os.path.isdir(destination_new_folder_name):
-                os.mkdir(destination_new_folder_name)
-        except:
-            print("Exception occurred while creating " + destination_new_folder_name)
-            break
+            remove_password(source_path, destination_path)
+        except Exception as e:
+            nb_pdf_failed += 1
+            destination_path.unlink(missing_ok=True)
+            print(f"--- Exception occurred with creation of file {destination_path}: {e} ---")
+            print(f"--- {source_path} is left in place ---")
+            continue
 
-        old_file_name = file_name
-        file_name = file_name.lower().replace('.pdf.convert', '.pdf')
-        file_name = file_name.lower().replace('.pdf.import', '.pdf')
-        destination_file_path = os.path.join(destination_new_folder_name, file_name)
-
-        if file_name.lower().endswith(('.pdf', '.pdf.convert', 'pdf.import')):
-            f = None
-            pdf_output_file = None
-
-            try:
-                f = open(source_file_path, 'rb')
-
-                file_reader = PyPDF2.PdfReader(f)
-
-                print(source_file_path + " > Nb pages: " + str(len(file_reader.pages)) + "; Is Encrypted: " + str(
-                    file_reader.is_encrypted))
-
-                pdf_writer = PyPDF2.PdfWriter()
-
-                for pageNum in range(len(file_reader.pages)):
-                    page_obj = file_reader.pages[pageNum]
-                    pdf_writer.add_page(page_obj)
-
-                pdf_output_file = open(destination_file_path, 'wb')
-                pdf_writer.write(pdf_output_file)
-                pdf_output_file.close()
-                nb_pdf_corrected = nb_pdf_corrected + 1
-                f.close()
-            except:
-                if f is not None:
-                    f.close()
-
-                if pdf_output_file is not None:
-                    pdf_output_file.close()
-
-                print("--- Exception occurred with creation of file " + destination_file_path + " ---")
         try:
-            shutil.move(source_file_path, os.path.join(destination_backup_folder_name, old_file_name))
-            nb_files_moved = nb_files_moved + 1
-        except:
-            print("Exception occurred while moving from [ " + source_file_path + " ] to [ " +
-                  destination_backup_folder_name + old_file_name + " ]")
+            shutil.move(source_path, backup_directory / source_path.name)
+            nb_pdf_corrected += 1
+        except OSError as e:
+            print(f"Exception occurred while moving [ {source_path} ] to [ {backup_directory} ]: {e}")
 
-    print(str(nb_files_moved) + " file(s) have been moved in " + destination_backup_folder_name)
-    print(str(nb_pdf_corrected) + " pdf file(s) have been treated.")
-    input("Press enter to continue...")
+    print(f"{nb_pdf_corrected} pdf file(s) have been treated and moved in {backup_directory}")
+    if nb_pdf_failed:
+        print(f"{nb_pdf_failed} pdf file(s) could not be treated and were left in {args.source_directory}")
 
-def file_age_in_seconds(pathname):
-    return time.time() - os.stat(pathname)[stat.ST_MTIME]
+    if args.pause:
+        input("Press enter to continue...")
 
 
 if __name__ == "__main__":

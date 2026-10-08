@@ -1,0 +1,1 @@
+pypdf[crypto]>=4.0
