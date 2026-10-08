@@ -5,6 +5,8 @@ from pathlib import Path
 
 from pypdf import PdfReader, PdfWriter
 
+__version__ = '2.0.0'
+
 # Extensions handled, with the suffix to strip to get back a plain ".pdf" name
 PDF_SUFFIXES = ('.pdf', '.pdf.convert', '.pdf.import')
 EXTRA_SUFFIXES = ('.convert', '.import')
@@ -19,6 +21,7 @@ def parse_args():
                         help='Minimum age in seconds of the files to treat (younger files are ignored)')
     parser.add_argument('-p', '--pause', action='store_true',
                         help='Wait for the user to press enter before exiting')
+    parser.add_argument('-v', '--version', action='version', version=f'%(prog)s {__version__}')
     return parser.parse_args()
 
 
