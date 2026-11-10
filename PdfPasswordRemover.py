@@ -56,6 +56,10 @@ def remove_password(source_path, destination_path):
 def main():
     args = parse_args()
 
+    if not args.source_directory.is_dir():
+        print(f"Error: source directory '{args.source_directory}' does not exist or is not a directory")
+        raise SystemExit(1)
+
     date_exec = time.strftime('%Y%m%d%H%M%S')
     backup_directory = args.destination_directory / f'{date_exec}_backup'
     new_directory = args.destination_directory / f'{date_exec}_new'
