@@ -15,3 +15,4 @@ pyvenv.cfg
 /MailZHCI_PdfPasswordRemover.bat
 /MailZHUL_PdfPasswordRemover.bat
 /MailPHUL_PdfPasswordRemover.bat
+.venv/

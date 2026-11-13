@@ -52,6 +52,13 @@ Details:
 - Files ending with `.pdf`, `.pdf.convert` or `.pdf.import` (case-insensitive) are treated. The `.convert` / `.import` suffix is removed from the output name, and the original case of the file name is kept.
 - Other files are ignored and stay in the source directory.
 - If a PDF cannot be treated, it is left in the source directory and the error is displayed.
+- Both `source_directory` and `destination_directory` must already exist. Otherwise the script displays an error and exits with code `1` without touching any file.
+
+## Running the tests
+
+```bash
+python -m unittest discover -s tests -v
+```
 
 ## Releasing a new version
 
