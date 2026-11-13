@@ -1,5 +1,6 @@
 import argparse
 import shutil
+import sys
 import time
 from pathlib import Path
 
@@ -12,7 +13,7 @@ PDF_SUFFIXES = ('.pdf', '.pdf.convert', '.pdf.import')
 EXTRA_SUFFIXES = ('.convert', '.import')
 
 
-def parse_args():
+def parse_args(argv=None):
     parser = argparse.ArgumentParser(
         description="Tool made to remove password set on pdf files - (Stefano Crapanzano - s.crapanzano@gmail.com)")
     parser.add_argument('source_directory', type=Path, help='Directory containing the PDFs with password protection')
@@ -22,7 +23,7 @@ def parse_args():
     parser.add_argument('-p', '--pause', action='store_true',
                         help='Wait for the user to press enter before exiting')
     parser.add_argument('-v', '--version', action='version', version=f'%(prog)s {__version__}')
-    return parser.parse_args()
+    return parser.parse_args(argv)
 
 
 def is_pdf(path):
@@ -35,6 +36,15 @@ def output_name(file_name):
         if file_name.lower().endswith('.pdf' + suffix):
             return file_name[:-len(suffix)]
     return file_name
+
+
+def check_directories(source_directory, destination_directory):
+    """Return an error message if a directory is missing, None otherwise."""
+    if not source_directory.is_dir():
+        return f"Source directory does not exist or is not a directory: {source_directory}"
+    if not destination_directory.is_dir():
+        return f"Destination directory does not exist or is not a directory: {destination_directory}"
+    return None
 
 
 def file_age_in_seconds(path):
@@ -53,8 +63,19 @@ def remove_password(source_path, destination_path):
         writer.write(output_file)
 
 
-def main():
-    args = parse_args()
+def wait_if_requested(args):
+    if args.pause:
+        input("Press enter to continue...")
+
+
+def main(argv=None):
+    args = parse_args(argv)
+
+    error = check_directories(args.source_directory, args.destination_directory)
+    if error:
+        print(error, file=sys.stderr)
+        wait_if_requested(args)
+        return 1
 
     date_exec = time.strftime('%Y%m%d%H%M%S')
     backup_directory = args.destination_directory / f'{date_exec}_backup'
@@ -98,9 +119,9 @@ def main():
     if nb_pdf_failed:
         print(f"{nb_pdf_failed} pdf file(s) could not be treated and were left in {args.source_directory}")
 
-    if args.pause:
-        input("Press enter to continue...")
+    wait_if_requested(args)
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
