@@ -6,7 +6,7 @@ from pathlib import Path
 
 from pypdf import PdfReader, PdfWriter
 
-__version__ = '2.0.0'
+__version__ = '2.1.0'
 
 # Extensions handled, with the suffix to strip to get back a plain ".pdf" name
 PDF_SUFFIXES = ('.pdf', '.pdf.convert', '.pdf.import')
