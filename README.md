@@ -8,9 +8,17 @@ The script processes every PDF in a source directory and creates an unprotected 
 
 ## Installation
 
-### Windows executable
+### Executables (Windows and Linux)
 
-Download `PdfPasswordRemover.exe` from the [latest release](https://github.com/doolieSoft/PdfPasswordRemover/releases/latest). No Python installation is needed.
+Download the file for your system from the [latest release](https://github.com/doolieSoft/PdfPasswordRemover/releases/latest). No Python installation is needed.
+
+- Windows: `PdfPasswordRemover.exe`
+- Linux (x86_64): `PdfPasswordRemover-linux`, to be made executable after download:
+
+  ```bash
+  chmod +x PdfPasswordRemover-linux
+  ./PdfPasswordRemover-linux <source_directory> <destination_directory>
+  ```
 
 ### From source
 
@@ -60,6 +68,8 @@ Details:
 python -m unittest discover -s tests -v
 ```
 
+The tests also run automatically on GitHub Actions (Linux and Windows) for every push and pull request.
+
 ## Releasing a new version
 
 1. Update `__version__` in `PdfPasswordRemover.py` and commit.
@@ -70,4 +80,4 @@ python -m unittest discover -s tests -v
    git push origin master v2.0.1
    ```
 
-GitHub Actions then builds `PdfPasswordRemover.exe` and publishes it in a GitHub release. The build fails if the tag does not match `__version__`.
+GitHub Actions then runs the tests, builds `PdfPasswordRemover.exe` (Windows) and `PdfPasswordRemover-linux` (Linux) and publishes them in a GitHub release. The build fails if the tag does not match `__version__`.
